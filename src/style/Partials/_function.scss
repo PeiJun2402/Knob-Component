@@ -1,0 +1,59 @@
+@mixin layout($direction,$horizontal,$vertical){
+    display: flex;
+    flex-direction: $direction;
+    justify-content: $horizontal;
+    align-items: $vertical;
+
+}
+
+@mixin flex($direction){
+    display: flex;
+    flex-direction: $direction;
+
+}
+
+@mixin wrap($direction,$horizontal,$vertical){
+    display: flex;
+    flex-direction: $direction;
+    justify-content: $horizontal;
+    align-content: $vertical;
+    flex-wrap: wrap;
+
+}
+
+@mixin RWD-flex($horizontal,$vertical){
+    display: flex;
+    flex-direction: column;
+    justify-content: $horizontal;
+    align-items: $vertical;
+
+}
+
+
+@mixin gridLayout($NumberOfCells,$size){
+    display: grid;
+    grid-template-columns: repeat($NumberOfCells,$size);
+}
+
+@mixin labelText{
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+
+    margin-bottom: 0.5rem;
+}
+
+
+@mixin buttonbStyle($border,$BGCcolor,$color){
+    border: $border;
+    border-radius: 2rem;
+    background-color: $BGCcolor;
+    color: $color;
+    cursor: pointer;
+    transition: transform 0.5s ease;
+
+    &:hover{
+        transform: translateY(-10px);
+    }
+}
