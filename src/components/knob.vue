@@ -1,8 +1,11 @@
 <script setup>
 
 import  EmitEvents from '../components/EmitEvents.vue';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
+let centerX = 0;
+let centerY = 0;
+const angleDegree = ref(0)
 
 //【input區 變數】基本數值&顏色&尺寸
 const childComponentData = ref({
@@ -33,22 +36,29 @@ const reciveData =(data)=>{
 
 }
 
-//【滑鼠區 變數】拖移偵測&按鍵偵測
+//【滑鼠區 變數】拖移偵測
 const isDragging = ref(false)
-const directionMouse = ref(null)
 
 
 
-//【computed和watch區】value大小值差異 & 占比面積 | 更新最大最小值範圍
 
-const gapValue = computed(()=>{
- return childComponentData.value.maxNub - childComponentData.value.minNub
-})
+//【method和watch區】滑鼠移動弧度計算 & 角度轉換value | 更新最大最小值範圍
 
 
-const angleDegree = computed(()=>{
- return 360/gapValue.value * (childComponentData.value.valueNub-childComponentData.value.minNub) 
-})
+const getAngle = (x, y, centerX, centerY,initialAngle = 0) => {
+  let angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI) +90; // 計算滑鼠角度
+  angle = (angle + 360) % 360; // 確保角度在 0-360 之間
+  angle = (angle - initialAngle + 360) % 360; // 調整角度以考慮初始偏移
+  return angle;
+};
+
+const updateValue = (angle) => {
+  const normalizedAngle = angle < 0 ? angle + 360 : angle; // 將負角度轉為正角度
+  const range = childComponentData.value.maxNub - childComponentData.value.minNub;
+  const value = Math.round((normalizedAngle / 360) * range + childComponentData.value.minNub);
+  childComponentData.value.valueNub = value ; 
+  angleDegree.value = normalizedAngle
+};
 
 
 
@@ -76,21 +86,12 @@ watch(
 //拖移開始
 const onMouseDown =(event)=>{
   isDragging.value = true;
-  console.log(childComponentData.value)
+
+  const { left, top, width, height } = event.currentTarget.getBoundingClientRect();
+      centerX = left + width / 2;
+      centerY = top + height / 2;
 
 
-  switch (event.button) {
-    case 0:
-      directionMouse.value = true
-      break;
-
-    case 2:
-      directionMouse.value = false
-      break;
-
-    default:
-      alert("請用滑鼠左鍵增加數值，右鍵減少數值")
-  }
 
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('mouseup', onMouseUp); 
@@ -99,15 +100,9 @@ const onMouseDown =(event)=>{
 ////拖移過程
 const  onMouseMove=(event)=>{
   if(isDragging.value === true){
+    const angle = getAngle(event.clientX, event.clientY, centerX, centerY,childComponentData.value.angle);
+    updateValue(angle);
 
-
-    if(directionMouse.value=== false){ 
-      childComponentData.value.valueNub--
-    }
-    else  if(directionMouse.value === true){ 
-      childComponentData.value.valueNub++
-     
-    }
 }}
 
 //拖移結束
@@ -146,8 +141,6 @@ const onMouseUp=()=>{
               <p class="progressValue">{{childComponentData.valueNub}}%</p>
           </div>
        </div>
-
-       <p class="infoWord">在圓圈內【 滑鼠左鍵拖移:增加數值 | 滑鼠右鍵拖移:減少數值】</p>
 
   </div>
 
@@ -213,11 +206,6 @@ section{
      
 
     }
-
-    .infoWord{
-          letter-spacing: 0.5rem;
-          color: gray;
-        }
 
     
 }
